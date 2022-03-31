@@ -65,6 +65,11 @@ jobs:
       - name: Enforce Style Guide
         continue-on-error: true
         run:  flake8 --ignore=E501,E701,W504 speech_recognition tests examples setup.py
+              && echo "STYLE_CHECK=success" >> $GITHUB_ENV
 
       - name: Fake test
         run: true
+
+      - name: Asset that Enforce Style Guide passed
+        if: ${{ env.STYLE_CHECK != 'success' }}
+        run: exit 1
