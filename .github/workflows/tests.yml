@@ -15,11 +15,11 @@ on:
 
 jobs:
   tests:
-    strategy:
-      fail-fast: false
-
     env:
       PY_REQUIREMENTS_FILE: tests/requirements.txt
+
+    strategy:
+      fail-fast: false
 
       matrix:
         python:
