@@ -53,13 +53,13 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           cache: pip
-          cache-dependency-path: "$PY_REQUIREMENTS_FILE"
+          cache-dependency-path: ${{ env.PY_REQUIREMENTS_FILE }}
 
       - name: Install and upgrade Python packaging tools
         run:  python -m pip install --upgrade pip setuptools wheel
 
       - name: Install Python packages
-        run:  python -m pip install -r "$PY_REQUIREMENTS_FILE" -e .
+        run:  python -m pip install -r "${{ env.PY_REQUIREMENTS_FILE }}" -e .
 
       # ignore errors for long lines and multi-statement lines
       - name: Enforce Style Guide
