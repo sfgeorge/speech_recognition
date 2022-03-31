@@ -38,11 +38,11 @@ jobs:
 
     steps:
       - name: Install System Packages
-        run: |
-          apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-            swig \
-            libpulse-dev \
+        run:
+          sudo apt-get update &&
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y
+            swig
+            libpulse-dev
             libasound2-dev
 
       - name: Checkout Repository
