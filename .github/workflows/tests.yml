@@ -1,0 +1,79 @@
+name: CI
+on:
+  push:
+    branches:
+      - develop
+      - main
+      - master
+  pull_request:
+  # Run monthly as a canary for issues such as package installation failure.
+  # Note: scheduled workflows are disabled automatically after 60 days of
+  # repository inactivity.
+  # https://docs.github.com/en/actions/managing-workflow-runs/disabling-and-enabling-a-workflow
+  schedule:
+    - cron: '46 3 15 * *'
+
+jobs:
+  tests:
+    strategy:
+      env:
+        PY_REQUIREMENTS_FILE: tests/requirements.txt
+
+      fail-fast: false
+
+      matrix:
+        python:
+          - 2.7.18
+          - 3.3
+          - 3.4
+          - 3.5
+          - 3.6.15
+          - 3.7.12
+          - 3.8.12
+          - 3.9.10
+          - 3.10.2
+          - nightly
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install System Packages
+        run: |-
+          apt-get update
+            && DEBIAN_FRONTEND=noninteractive apt-get install -y
+               swig
+               libpulse-dev
+               libasound2-dev
+
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: "$PY_REQUIREMENTS_FILE"
+
+      - name: Install and upgrade Python packaging tools
+        run:  python -m pip install --upgrade pip setuptools wheel
+
+      - name: Install Python packages
+        run:  python -m pip install -r "$PY_REQUIREMENTS_FILE" -e .
+
+      # ignore errors for long lines and multi-statement lines
+      - name: Enforce Style Guide
+        run:  flake8 --ignore=E501,E701,W504 speech_recognition tests examples setup.py
+
+      - name: Ensure RST is well-formed
+        run:  rstcheck README.rst reference/*.rst
+
+      - name: Run Unit Tests
+        env:
+          BING_KEY: ${{ secrets.BING_KEY }}
+          HOUNDIFY_CLIENT_ID: ${{ secrets.HOUNDIFY_CLIENT_ID }}
+          HOUNDIFY_CLIENT_KEY: ${{ secrets.HOUNDIFY_CLIENT_KEY }}
+          IBM_USERNAME: ${{ secrets.IBM_USERNAME }}
+          IBM_PASSWORD: ${{ secrets.IBM_PASSWORD }}
+          WIT_AI_KEY: ${{ secrets.WIT_AI_KEY }}
+        run:  python -m unittest discover --verbose
